@@ -1,48 +1,55 @@
 <?php
 
-require_once '../config/Database.php';
-require_once '../controllers/PersonaController.php';
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+define('LARAVEL_START', microtime(true));
 
-$controller = new PersonaController((new Database())->conectar());
+/*
+|--------------------------------------------------------------------------
+| Check If The Application Is Under Maintenance
+|--------------------------------------------------------------------------
+|
+| If the application is in maintenance / demo mode via the "down" command
+| we will load this file so that any pre-rendered content can be shown
+| instead of starting the framework, which could cause an exception.
+|
+*/
 
-$method = $_SERVER['REQUEST_METHOD'];
-
-switch ($method) {
-    case 'GET':
-        $personas = $controller->obtenerPersona();
-        echo json_encode($personas);
-        break;
-    
-    case 'POST':
-        // Leer datos JSON o Form-data
-        $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data) {
-            $data = $_POST;
-        }
-
-        if (isset($data['name']) && isset($data['age']) && isset($data['email'])) {
-            $controller->crearPersona($data['name'], $data['age'], $data['email']);
-            http_response_code(201); // Created
-            echo json_encode(["message" => "Persona creada exitosamente."]);
-        } else {
-            http_response_code(400); // Bad Request
-            echo json_encode(["message" => "Datos incompletos."]);
-        }
-        break;
-
-    case 'OPTIONS':
-        // Manejo de peticiones preflight de CORS
-        http_response_code(200);
-        break;
-
-    default:
-        // Si no es GET ni POST, devolvemos un error limpio en lugar de intentar usar $personas
-        http_response_code(405); // Method Not Allowed
-        echo json_encode(["message" => "Método no permitido"]);
-        break;
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
 }
+
+/*
+|--------------------------------------------------------------------------
+| Register The Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader for
+| this application. We just need to utilize it! We'll simply require it
+| into the script here so we don't need to manually load our classes.
+|
+*/
+
+require __DIR__.'/../vendor/autoload.php';
+
+/*
+|--------------------------------------------------------------------------
+| Run The Application
+|--------------------------------------------------------------------------
+|
+| Once we have the application, we can handle the incoming request using
+| the application's HTTP kernel. Then, we will send the response back
+| to this client's browser, allowing them to enjoy our application.
+|
+*/
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$kernel = $app->make(Kernel::class);
+
+$response = $kernel->handle(
+    $request = Request::capture()
+)->send();
+
+$kernel->terminate($request, $response);
