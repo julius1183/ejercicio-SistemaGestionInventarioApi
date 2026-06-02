@@ -4,25 +4,83 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Usuario; // Asegúrate de que tu modelo se llame 'Usuario' o 'User'
+use App\Models\Usuario;
 
 class UsuarioController extends Controller
 {
-    public function updateRol(Request $request, $id)
+    /**
+     * Listar todos los usuarios.
+     */
+    public function index()
     {
-        // 1. Validar que el rol sea uno de los permitidos
-        $request->validate([
-            'rol' => 'required|string'
+        return response()->json(Usuario::all());
+    }
+
+    /**
+     * Crear un nuevo usuario.
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email'  => 'required|email|unique:usuarios,email',
+            'rol'    => 'required|string|max:255',
+            'estado' => 'required|integer',
         ]);
 
-        // 2. Buscar al usuario (Usamos el modelo 'Usuario' según tus capturas anteriores)
+        $usuario = Usuario::create($data);
+
+        return response()->json($usuario, 201);
+    }
+
+    /**
+     * Mostrar un usuario específico.
+     */
+    public function show($id)
+    {
         $usuario = Usuario::find($id);
 
         if (!$usuario) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
         }
 
-        // 3. Actualizar y guardar
+        return response()->json($usuario);
+    }
+
+    /**
+     * Actualizar los datos generales de un usuario.
+     */
+    public function update(Request $request, $id)
+    {
+        $usuario = Usuario::findOrFail($id);
+
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email'  => 'required|email|unique:usuarios,email,' . $id,
+            'rol'    => 'required|string|max:255',
+            'estado' => 'required|integer',
+        ]);
+
+        $usuario->update($data);
+
+        return response()->json($usuario);
+    }
+
+    /**
+     * Actualizar específicamente el rol de un usuario.
+     */
+    public function updateRol(Request $request, $id)
+    {
+        $request->validate([
+            'rol' => 'required|string'
+        ]);
+
+        $usuario = Usuario::find($id);
+
+        if (!$usuario) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
         $usuario->rol = $request->rol;
         $usuario->save();
 
@@ -32,13 +90,18 @@ class UsuarioController extends Controller
         ], 200);
     }
 
+    /**
+     * Eliminar un usuario.
+     */
     public function destroy($id)
     {
         $usuario = Usuario::find($id);
+        
         if ($usuario) {
             $usuario->delete();
             return response()->json(['message' => 'Eliminado'], 200);
         }
+        
         return response()->json(['message' => 'No encontrado'], 404);
     }
 }
