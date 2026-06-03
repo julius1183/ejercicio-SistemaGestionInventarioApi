@@ -12,10 +12,9 @@ class PerfilController extends Controller
      * Muestra el formulario para cambiar la contraseña.
      */
     public function cambiarPassword()
-    {
-        // Forzamos que busque el nombre exacto de tu archivo Blade
-        return view('cambiar-contrasena');
-    }
+{
+    return view('perfil.cambiar-password');
+}
 
     /**
      * Procesa la actualización de la contraseña en la base de datos.

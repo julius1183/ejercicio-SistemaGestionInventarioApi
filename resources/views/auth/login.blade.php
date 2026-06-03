@@ -28,6 +28,12 @@
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
+                        @if (session('status'))
+                            <div class="alert alert-success p-2 mb-3" style="border-radius: 10px; font-size: 0.9rem;">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
                         @if ($errors->any())
                             <div class="alert alert-danger p-2 mb-3" style="border-radius: 10px; font-size: 0.9rem;">
                                 <ul class="mb-0">

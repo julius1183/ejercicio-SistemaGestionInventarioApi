@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
+
+<style>
+    body {
+        /* Usamos la misma imagen que funcionó en proveedores para mantener la identidad del SGI */
+        background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+                          url('{{ asset("img/fondo.png") }}'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+    
+    /* Hacemos que el contenedor principal tenga un toque de transparencia elegante */
+    .container.mt-5 {
+        background: rgba(255, 255, 255, 0.9); 
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        margin-bottom: 50px;
+    }
+
+    .table-dark {
+        background-color: #212529 !important;
+    }
+</style>
+
+
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">

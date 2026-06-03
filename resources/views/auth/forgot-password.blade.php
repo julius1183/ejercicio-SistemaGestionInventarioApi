@@ -5,14 +5,12 @@
 
 @section('content')
 <style>
-    /* Fondo de pantalla completa igual al Login */
     body {
         background: url("{{ asset('img/fondo.png') }}") no-repeat center center fixed;
         background-size: cover;
         height: 100vh;
     }
 
-    /* Tarjeta con transparencia y desenfoque */
     .card {
         background-color: rgba(255, 255, 255, 0.9) !important;
         backdrop-filter: blur(5px);
@@ -25,15 +23,19 @@
         <div class="col-md-4">
             <div class="card shadow border-0">
                 <div class="card-body p-4">
-                    
-                    {{-- Mensaje de estado cuando Laravel envía el correo con éxito --}}
+
                     @if (session('status'))
                         <div class="alert alert-success p-2 mb-3" style="border-radius: 10px; font-size: 0.9rem;">
                             {{ session('status') }}
+                            @if (session('reset_url'))
+                                <hr class="my-2">
+                                <a href="{{ session('reset_url') }}" class="alert-link small fw-bold d-block text-break">
+                                    {{ session('reset_url') }}
+                                </a>
+                            @endif
                         </div>
                     @endif
 
-                    {{-- Errores de validación (por ejemplo, si el correo no existe) --}}
                     @if ($errors->any())
                         <div class="alert alert-danger p-2 mb-3" style="border-radius: 10px; font-size: 0.9rem;">
                             <ul class="mb-0">
@@ -62,7 +64,7 @@
 
                         <div class="text-center mt-3">
                             <a href="{{ route('login') }}" class="text-decoration-none small fw-bold text-secondary">
-                                <i class="fas fa-arrow-left me-1"></i> Volver al Inicio de Sesión
+                                &larr; Volver al Inicio de Sesión
                             </a>
                         </div>
                     </form>

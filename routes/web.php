@@ -3,90 +3,92 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsuarioWebController;
 use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\ProveedorWebController; // Importación correcta
+use App\Http\Controllers\ProveedorWebController;
+use App\Http\Controllers\StockWebController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\AnalisisController; // <- Importación del nuevo controlador organizada aquí arriba
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\AuthController as ApiAuthController;
+use App\Http\Controllers\AlertaController;
 
 /*
 |--------------------------------------------------------------------------
-| Rutas de Autenticación
+| Rutas Públicas y Autenticación
 |--------------------------------------------------------------------------
 */
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/', function () {
-    return view('welcome');
-})->middleware('auth');
+// Registro de nuevos usuarios
+Route::get('/registro', [ApiAuthController::class, 'mostrarRegistro'])->name('registro');
+Route::post('/registro', [ApiAuthController::class, 'registrar'])->name('registro.guardar');
+
+// Recuperación de contraseña (olvidé mi contraseña)
+Route::get('/olvide-contrasena', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/olvide-contrasena', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/restablecer-contrasena/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/restablecer-contrasena', [ResetPasswordController::class, 'reset'])->name('password.update');
+
 
 /*
 |--------------------------------------------------------------------------
-| Gestión de Usuarios
+| Rutas Protegidas (Solo Usuarios Autenticados)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+
+    // Inicio / Bienvenida
+    Route::get('/', function () {
+        return view('welcome');
+    });
+
+    // Gestión de Usuarios
     Route::get('/usuarios', [UsuarioWebController::class, 'index'])->name('usuarios.index');
     Route::get('/usuarios/crear', [UsuarioWebController::class, 'create'])->name('usuarios.create');
     Route::post('/usuarios/guardar', [UsuarioWebController::class, 'store'])->name('usuarios.store');
-});
+    
 
-/*
-|--------------------------------------------------------------------------
-| Gestión de Proveedores (Corregido para Web)
-|--------------------------------------------------------------------------
-*/
-// Unificamos para que use siempre ProveedorWebController
-Route::get('/proveedores', [ProveedorWebController::class, 'index'])->name('proveedores.index');
-Route::get('/proveedores/crear', [ProveedorWebController::class, 'create'])->name('proveedores.create');
-Route::post('/proveedores', [ProveedorWebController::class, 'store'])->name('proveedores.store');
-Route::get('/proveedores/{proveedor}/editar', [ProveedorWebController::class, 'edit'])->name('proveedores.edit');
-Route::put('/proveedores/{proveedor}', [ProveedorWebController::class, 'update'])->name('proveedores.update');
-Route::delete('/proveedores/{proveedor}', [ProveedorWebController::class, 'destroy'])->name('proveedores.destroy');
+    // Gestión de Proveedores
+    Route::get('/proveedores', [ProveedorWebController::class, 'index'])->name('proveedores.index');
+    Route::get('/proveedores/crear', [ProveedorWebController::class, 'create'])->name('proveedores.create');
+    Route::post('/proveedores', [ProveedorWebController::class, 'store'])->name('proveedores.store');
+    Route::get('/proveedores/{proveedor}/editar', [ProveedorWebController::class, 'edit'])->name('proveedores.edit');
+    Route::put('/proveedores/{proveedor}', [ProveedorWebController::class, 'update'])->name('proveedores.update');
+    Route::delete('/proveedores/{proveedor}', [ProveedorWebController::class, 'destroy'])->name('proveedores.destroy');
 
-/*
-|--------------------------------------------------------------------------
-| Gestión de Productos
-|--------------------------------------------------------------------------
-*/
-Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
-Route::get('/productos/crear', [ProductoController::class, 'create'])->name('productos.create');
-Route::post('/productos/guardar', [ProductoController::class, 'store'])->name('productos.store');
-Route::get('/productos/{producto}/editar', [ProductoController::class, 'edit'])->name('productos.edit');
-Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
-Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
+    // Gestión de Productos
+    Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
+    Route::get('/productos/crear', [ProductoController::class, 'create'])->name('productos.create');
+    Route::post('/productos/guardar', [ProductoController::class, 'store'])->name('productos.store');
+    Route::get('/productos/{producto}/editar', [ProductoController::class, 'edit'])->name('productos.edit');
+    Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
+    Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
 
-use App\Http\Controllers\StockWebController;
+    // Gestión de Stock
+    Route::get('/stocks', [StockWebController::class, 'index'])->name('stocks.index');
+    Route::get('/stocks/crear', [StockWebController::class, 'create'])->name('stocks.create');
+    Route::post('/stocks/guardar', [StockWebController::class, 'store'])->name('stocks.store');
 
-// Añade estas líneas junto a tus otras rutas web protegidas (debajo del login)
-Route::get('/stocks', [StockWebController::class, 'index'])->name('stocks.index');
-Route::get('/stocks/crear', [StockWebController::class, 'create'])->name('stocks.create');
+    // Gestión de Perfil
+    Route::get('/perfil/cambiar-contratena', [PerfilController::class, 'cambiarPassword'])->name('password.cambiar');
+    Route::post('/perfil/actualizar-contratena', [PerfilController::class, 'actualizarPassword'])->name('password.actualizar');
 
+    // Módulo de Entregas y Pedidos
+    Route::get('/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
+    Route::get('/pedidos/crear', [PedidoController::class, 'create'])->name('pedidos.create');
+    Route::post('/pedidos/guardar', [PedidoController::class, 'store'])->name('pedidos.store');
+    Route::get('/pedidos/{id}', [PedidoController::class, 'show'])->name('pedidos.show');
+    Route::post('/pedidos/{id}/entregado', [PedidoController::class, 'marcarEntregado'])->name('pedidos.entregado');
+    Route::patch('/pedidos/{id}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
 
-Route::post('/stocks/guardar', [StockWebController::class, 'store'])->name('stocks.store');
+    // Módulo de Análisis e Informes (¡Agregado aquí de forma segura!)
+    Route::get('/analisis', [AnalisisController::class, 'index'])->name('analisis.index');
 
+// Módulo de Alertas y Notificaciones (Web)
+    Route::get('/alertas', [AlertaController::class, 'index'])->name('alertas.index');
 
-use App\Http\Controllers\PerfilController;
-
-// Rutas para la gestión del perfil de usuario
-Route::get('/perfil/cambiar-contratena', [PerfilController::class, 'cambiarPassword'])->name('password.cambiar');
-Route::post('/perfil/actualizar-contratena', [PerfilController::class, 'actualizarPassword'])->name('password.actualizar');
-
-// Rutas para la recuperación de contraseña
-Route::get('/olvide-contrasena', function () {
-    return view('auth.forgot-password'); // O la vista que vayas a crear luego
-})->name('password.request');
-
-Route::post('/olvide-contrasena', function () {
-    // Aquí irá la lógica de enviar el correo más adelante
-})->name('password.email');
-
-// Ruta para el registro de nuevos usuarios
-Route::get('/registro', function () {
-    return view('auth.register'); // O la vista que definas para registrarse
-})->name('registro');
-
-use App\Http\Controllers\API\AuthController;
-
-// Rutas de Registro web apuntando al controlador que está en la carpeta API
-Route::get('/registro', [AuthController::class, 'mostrarRegistro'])->name('registro');
-Route::post('/registro', [AuthController::class, 'registrar'])->name('registro.guardar');
+}); // <- Esta llave y paréntesis cierran de manera correcta TODO el grupo 'auth'

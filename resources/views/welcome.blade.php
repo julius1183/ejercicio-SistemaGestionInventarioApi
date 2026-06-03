@@ -104,7 +104,8 @@
                 <img src="{{ asset('img/entregas_pedidos.png') }}" class="img-modulo">
                 <h3>Entregas</h3>
                 <p class="text-muted">Gestión de Pedidos</p>
-                <button class="btn btn-secondary w-100 rounded-pill" disabled>Próximamente</button>
+                <a href="{{ url('/pedidos') }}" class="btn btn-success w-100 rounded-pill">Entrar</a>
+                <button class="btn btn-secondary w-100 rounded-pill" disabled></button>
             </div>
         </div>
 
@@ -113,7 +114,7 @@
                 <img src="{{ asset('img/alertas_notificaciones.png') }}" class="img-modulo">
                 <h3>Alertas</h3>
                 <p class="text-muted">Centro de Notificaciones</p>
-                <button class="btn btn-secondary w-100 rounded-pill" disabled>Próximamente</button>
+                <a href="{{ route('alertas.index') }}" class="btn btn-primary w-100 rounded-pill">Entrar</a>
             </div>
         </div>
 
@@ -126,12 +127,14 @@
             </div>
         </div>
 
-        <div class="swiper-slide">
+        <div class="swiper-slide"> 
             <div class="card card-modulo">
                 <img src="{{ asset('img/informes_analisis.png') }}" class="img-modulo">
                 <h3>Análisis</h3>
                 <p class="text-muted">Informes y Estadísticas</p>
-                <button class="btn btn-secondary w-100 rounded-pill" disabled>Próximamente</button>
+                <a href="{{ route('analisis.index') }}" class="btn btn-primary fw-bold px-4 w-100" style="border-radius: 10px;">Entrar
+                </a>
+                <button class="btn btn-secondary w-100 rounded-pill" disabled></button>
             </div>
         </div>
 

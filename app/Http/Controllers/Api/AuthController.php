@@ -1,41 +1,80 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
-class LoginController extends Controller
+class AuthController extends Controller
 {
-    // Muestra el formulario
-    public function showLoginForm() {
-        return view('auth.login');
-    }
-
-    // Procesa el inicio de sesión
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'email'    => 'required|email',
+            'password' => 'required',
         ]);
 
-        // Intentar autenticar
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/'); // Te manda al Dashboard (welcome)
+        if (! Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Credenciales inválidas'], 401);
         }
 
-        return back()->withErrors([
-            'email' => 'Las credenciales no coinciden con nuestros registros.',
-        ])->onlyInput('email');
+        $user = Auth::user();
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login exitoso',
+            'token'   => $token,
+            'user'    => $user,
+        ]);
     }
 
-    // Cerrar sesión
-    public function logout(Request $request) {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/login');
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre'   => 'required_without:name|string|max:255',
+            'name'     => 'required_without:nombre|string|max:255',
+            'email'    => 'required|email|unique:usuarios,email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $usuario = Usuario::create([
+            'nombre'   => $validated['nombre'] ?? $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'rol'      => $request->input('rol', 'Usuario'),
+            'estado'   => $request->input('estado', 'Activo'),
+        ]);
+
+        return response()->json($usuario, 201);
+    }
+
+    public function mostrarRegistro()
+    {
+        return view('auth.register');
+    }
+
+    public function registrar(Request $request)
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:usuarios,email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $usuario = Usuario::create([
+            'nombre'   => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'rol'      => 'Usuario',
+            'estado'   => 'Activo',
+        ]);
+
+        Auth::login($usuario);
+        $request->session()->regenerate();
+
+        return redirect()->intended('/');
     }
 }

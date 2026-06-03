@@ -65,3 +65,21 @@ use App\Http\Controllers\Api\StockController;
 // Rutas protegidas o públicas de tu API (añádela donde tengas las de productos/proveedores)
 Route::get('/stocks', [StockController::class, 'index']);
 Route::post('/stocks', [StockController::class, 'store']);
+
+use App\Http\Controllers\Api\PedidoApiController;
+
+// Endpoints para la aplicación Android (Kotlin + Retrofit)
+Route::get('/pedidos', [PedidoApiController::class, 'index']);
+Route::post('/pedidos', [PedidoApiController::class, 'store']);
+
+// Ruta para actualizar el estado del pedido desde Kotlin
+Route::put('/pedidos/{id}/estado', [PedidoApiController::class, 'updateEstado']);
+
+use App\Http\Controllers\Api\AnalisisApiController;
+
+// Ruta para que Android consuma las estadísticas
+Route::get('/analisis', [AnalisisApiController::class, 'obtenerEstadisticas']);
+
+use App\Http\Controllers\Api\AlertaApiController;
+// Endpoint para Alertas de Inventario (API)
+    Route::get('/alertas', [AlertaApiController::class, 'obtenerAlertas']);
